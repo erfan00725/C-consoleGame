@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "a6EO+gKYBE46EZ0WsWUBvWEk+/IjwlGBG25U15uLj6IGSKcgTfxF8SuBU+DrfejukQu6mXjs6q/OEH2NGsZpTg==",
+  "dgSpecHash": "cgsuv7H3U+4NlI2iDYITQWzbwnqwzqOWKQUtM7NwRCSTpOGC4nBPA/dJ2IQValShwa9dX20fw4cpJfbUQ2e3zg==",
   "success": true,
-  "projectFilePath": "E:\\programming\\Game\\Game.csproj",
+  "projectFilePath": "D:\\programming\\C-consoleGame\\Game.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }
