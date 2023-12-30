@@ -554,6 +554,313 @@ namespace Application
             }
         }
 
+        class spaceInvaderGmae
+        {
+
+            class Ship
+            {
+                public int x;
+                public int y;
+
+                public Ship(int x, int y)
+                {
+                    this.x = x;
+                    this.y = y;
+                }
+
+                public void updateShip(MovmentKeys key , int width)
+                {
+
+                    if (key.currentKey == 2 && this.x != (width - 2))
+                    {
+                        this.x++;
+                    }
+                    else if (key.currentKey == -2 && this.x != 1)
+                    {
+                        this.x--;
+                    }
+                    key.currentKey = 0;
+
+
+                }
+            }
+
+
+            class Bullet
+            {
+                public int x;
+                public int y;
+
+                public Bullet(int x , int y)
+                {
+                    this.x = x ; this.y = y;
+                }
+
+                public void updaeBullet()
+                {
+                    this.y--;
+                }
+            }
+
+            class Bullets
+            {
+                List<Bullet> bullets = [];
+
+                int delay = 0;
+
+                public void addBullet(int x, int y)
+                {
+                    if (delay == 0)
+                    {
+                        bullets.Add(new Bullet(x, y));
+                        delay = 2;
+                    }
+                    else
+                    {
+                        delay--;
+                    }
+                }
+
+                public void uodateBullet(int y)
+                {
+                    if (bullets.Count > 1)
+                    {
+                        if (bullets[0].y >  y)
+                        {
+                            bullets.RemoveAt(0);
+                        }
+                    }
+                    for (int i = 0; i < bullets.Count; i++)
+                    {
+                        bullets[i].updaeBullet();
+                    }
+                }
+
+                public bool checkBullets(int x, int y)
+                {
+                    for (int i = 0; i < bullets.Count; i++)
+                    {
+                        if (bullets[i].x == x && bullets[i].y == y)
+                        {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+
+            }
+
+
+            class Enemy
+            {
+                public int x;
+                public int y;
+
+                public Enemy(int x, int y)
+                {
+                    this.x = x; this.y = y;
+                }
+
+                public void updateEnemy()
+                {
+                    this.y++;
+                }
+            }
+
+            class Enemies
+            {
+                List<Enemy> enemies = [];
+
+                int delay = 0;
+                int updateDelay = 0;
+
+
+                Random random = new Random();
+
+                public void addEnemy(int x)
+                {
+                    int rnd = random.Next(1, x - 1);
+
+
+                    if (delay == 0)
+                    {
+                        enemies.Add(new Enemy(rnd, 1));
+                        delay = 5;
+                    }
+                    else
+                    {
+                        delay--;
+                    }
+                }
+
+                public void updateEnemies(int y)
+                {
+                    if (enemies.Count > 1)
+                    {
+                        if (enemies[0].y > y)
+                        {
+                            enemies.RemoveAt(0);
+                        }
+                    }
+                    if (updateDelay == 0)
+                    {
+                        for (int i = 0; i < enemies.Count; i++)
+                        {
+                            enemies[i].updateEnemy();
+                        }
+                        updateDelay = 4;
+                    }
+                    else
+                    {
+                        updateDelay--;
+                    }
+                }
+
+                public bool checkEnemies(int x, int y)
+                {
+                    for (int i = 0; i < enemies.Count; i++)
+                    {
+                        if (enemies[i].x == x && enemies[i].y == y)
+                        {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+
+                public bool bulletCollisionCheck(int x , int y , bool bulletCheck)
+                {
+                    for (int i = 0; i < enemies.Count; i++)
+                    {
+                        if (enemies[i].x == x && enemies[i].y == y && bulletCheck)
+                        {
+                            enemies.RemoveAt(i);
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
+            }
+
+
+
+            public MovmentKeys key = new MovmentKeys();
+
+            const int x = 40;
+            const int y = 20;
+
+            public int score = 0;
+
+            public bool gameOver = false;
+
+            private Ship ship = new Ship(x / 2, y - 3);
+            private Bullets bullets = new Bullets();
+            private Enemies enemies = new Enemies();
+
+
+            public void playGround()
+            {
+                Console.SetCursorPosition(0, 0);
+
+
+
+                key.updateMovmentKey();
+
+                ship.updateShip(key , x);
+
+                bullets.addBullet(ship.x , ship.y-1);
+
+                bullets.uodateBullet(y);
+
+                enemies.addEnemy(x);
+
+                enemies.updateEnemies(y);
+
+
+                for (int i = 0; i < y; i++)
+                {
+                    for (int j = 0; j < x; j++)
+                    {
+
+
+                        if (j == 0 || j == x - 1 || i == 0 || i == y - 1)
+                        {
+                            Console.Write("#");
+                        }
+                        else if (ship.x == j && ship.y == i)
+                        {
+                            Console.Write("^");
+                        }
+                        else if (enemies.checkEnemies(ship.x, ship.y))
+                        {
+                            Console.Write("*");
+                            gameOver = true;
+                        }
+                        else if (ship.x == j && ship.y+1 == i)
+                        {
+                            Console.Write("-");
+                        }
+                        else if (bullets.checkBullets(j, i))
+                        {
+                            Console.Write("!");
+                            if(enemies.bulletCollisionCheck(j, i, bullets.checkBullets(j, i)))
+                            {
+                                score++;
+                            };
+                        }
+                        else if (enemies.checkEnemies(j,i))
+                        {
+                            Console.Write("*");
+                        }
+                        else
+                        {
+                            Console.Write(" ");
+                        }
+                    }
+                    Console.WriteLine();
+
+                }
+
+
+            }
+
+
+            public void play()
+            {
+                Console.CursorVisible = false;
+
+                int gameSpeed = 10;
+
+
+                while (!this.gameOver)
+                {
+                    Console.WriteLine("score : " + this.score.ToString());
+                    Console.WriteLine("key : " + this.key.currentKey.ToString());
+                    Console.WriteLine("x : " + this.ship.x.ToString() + "y : " + this.ship.y.ToString());
+
+
+                    this.playGround();
+
+                    if (this.key.currentKey == 1 || this.key.currentKey == -1)
+                    {
+                        Thread.Sleep(gameSpeed);
+                    }
+                    else
+                    {
+                        Thread.Sleep((int)(gameSpeed / 2));
+                    }
+                }
+
+                Console.CursorVisible = true;
+                Console.WriteLine("score : " + this.score.ToString());
+                Console.WriteLine("game over!");
+                Console.ReadKey();
+            }
+        }
+
         static void Main(string[] args)
         {
             Console.SetWindowSize(150, 40);
@@ -564,10 +871,11 @@ namespace Application
                 //Console.SetCursorPosition(0, 0);
                 Console.Clear();
 
-                Console.WriteLine("-----------welocme!-----------");
+                Console.WriteLine("-----------welocme-----------");
                 Console.WriteLine();
                 Console.WriteLine("snake game : 1");
                 Console.WriteLine("floppy bird : 2");
+                Console.WriteLine("space invader : 3");
                 Console.WriteLine("exit : 0");
                 Console.WriteLine();
 
@@ -591,6 +899,14 @@ namespace Application
                             floppyBirdGmae floppyBird = new floppyBirdGmae();
 
                             floppyBird.play();
+
+                            break;
+                        }
+                    case "3":
+                        {
+                            spaceInvaderGmae spaceInvader = new spaceInvaderGmae();
+
+                            spaceInvader.play();
 
                             break;
                         }
