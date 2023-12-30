@@ -1,4 +1,5 @@
-﻿using System.Runtime.Versioning;
+﻿using System.Diagnostics;
+using System.Runtime.Versioning;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml.Linq;
 using static System.Formats.Asn1.AsnWriter;
@@ -15,14 +16,18 @@ namespace Application
             private const int right = 2;
             private const int left = -2;
 
+            private const int space = 5;
+
             private const string keyUp = "W";
             private const string keyDown = "S";
             private const string keyRight = "D";
             private const string keyLeft = "A";
 
+            private const string keySpace = "Spacebar";
+
 
             public int prevKey = 1;
-            private System.ConsoleKeyInfo keyInfo;
+            public System.ConsoleKeyInfo keyInfo;
 
             public int currentKey = 1;
 
@@ -32,7 +37,7 @@ namespace Application
                 if (Console.KeyAvailable)
                 {
                     keyInfo = Console.ReadKey(true);
-                    bool valid = keyInfo.Key.ToString() == keyUp || keyInfo.Key.ToString() == keyDown || keyInfo.Key.ToString() == keyRight || keyInfo.Key.ToString() == keyLeft;
+                    bool valid = keyInfo.Key.ToString() == keySpace || keyInfo.Key.ToString() ==  keyUp || keyInfo.Key.ToString() == keyDown || keyInfo.Key.ToString() == keyRight || keyInfo.Key.ToString() == keyLeft;
                     if (!valid)
                     {
                         return ;
@@ -48,6 +53,7 @@ namespace Application
                             currentKey = right; break;
                         case keyLeft:
                             currentKey = left; break;
+                        case keySpace: currentKey = space; break;
                             default: break;
                     }
                 }
@@ -237,7 +243,7 @@ namespace Application
             {
                 Console.CursorVisible = false;
 
-                int gameSpeed = 100;
+                int gameSpeed = 50;
 
 
                 while (!this.gameOver)
@@ -269,12 +275,288 @@ namespace Application
 
         class floppyBirdGmae
         {
+            class Bird
+            {
+                public int x;
+                public int y;
 
+                private bool isTop = true;
+
+                public Bird(int x , int y)
+                {
+                    this.x = x;
+                    this.y = y;
+                }
+
+                public void updateMovment(MovmentKeys key)
+                {
+
+                    if (key.currentKey == 5)
+                    {
+                        changeDir();
+                        key.currentKey = 0;
+                    }
+
+
+                    if (isTop)
+                    {
+                        this.y--;
+                    }
+                    else
+                    {
+                        this.y++;
+                    }
+                }
+
+                public void changeDir()
+                {
+                    this.isTop = !this.isTop;
+                }
+
+                public bool checkBird(int x , int y)
+                {
+                    if (this.x == x && this.y == y)
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
+            }
+
+            class SolarPart
+            {
+                public int x;
+                public int y;
+
+                public SolarPart(int x , int y)
+                {
+                    this.x=x;
+                    this.y=y;
+            }
+
+                }
+            class Solar
+            {
+                public List<SolarPart> solarList = [];
+                public int hight;
+                public int x;
+
+                public Random rnd = new Random();
+
+                public int space;
+
+                public Solar(int hight , int x) {
+
+                    space = rnd.Next(6, hight - 6);
+
+                    this.x = x;
+
+                    for (int i = 0; i < hight; i++)
+                    {
+                        solarList.Add(new SolarPart(x , i));
+                    }
+
+                }
+
+                public void updateSolar()
+                {
+                    x--;
+                    for (int i = 0; i < solarList.Count; i++)
+                    {
+                        solarList[i].x = x;
+                    }
+                }
+
+                private bool checkSpace(SolarPart part , int lenght)
+                {
+
+                    bool isSpace = false;
+
+                    if (part.y == space)
+                    {
+                        isSpace = true;
+                    }
+
+                    for (int i = 1; i <= lenght; i++)
+                    {
+                        if (part.y == space + i || part.y == space - i)
+                        {
+                            isSpace = true; break;
+                        }
+                    }
+
+                    
+                    return !isSpace;
+                }
+
+                public bool checkSolar(int x , int y)
+                {
+                    for (int i = 0; i < solarList.Count; i++)
+                    {
+                        if (solarList[i].x == x && solarList[i].y == y && checkSpace(solarList[i] , 3))
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+
+            class Solars
+            {
+                Random rnd = new Random();
+
+                List<Solar> solars = [];
+
+                int spawnTimer = 0;
+
+                public Solars()
+                {
+                    //spawnTimer = rnd.Next(5, 10);
+                }
+
+                public void updateSolars(int hight , int x)
+                {
+                    if (spawnTimer == 0)
+                    {
+                        solars.Add(new Solar(hight, x));
+                        spawnTimer = rnd.Next(15, 40);
+                    }
+                    else
+                    {
+                        spawnTimer--;
+                    }
+
+                    if (solars.Count > 0)
+                    {
+                        if (solars[0].x < 1)
+                        {
+                            solars.RemoveAt(0);
+                        }
+
+                        for (global::System.Int32 i = 0; i < solars.Count; i++)
+                        {
+                            solars[i].updateSolar();
+                        }
+                    }
+
+                }
+
+                public bool checkSolars(int x, int y)
+                {
+                    for (int i = 0; i < solars.Count; i++)
+                    {
+                        if (solars[i].checkSolar(x , y))
+                        {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+
+
+
+            }
+
+            static int x = 70;
+            static int y = 30;
+
+            public bool gameOver = false;
+
+            public int score = 0;
+
+            public MovmentKeys key = new MovmentKeys();
+
+            public int gameSpeed = 10;
+
+            private Bird bird = new Bird(5, y / 2);
+
+            Solars solars = new Solars();
+
+
+            private void playGround()
+            {
+
+                Console.SetCursorPosition(0, 0);
+
+                this.key.updateMovmentKey();
+
+
+                bird.updateMovment(key);
+                solars.updateSolars(y, x);
+
+                for (int i = 0; i < y; i++)
+                {
+                    for (global::System.Int32 j = 0; j < x; j++)
+                    {
+                        if (i == 0 || i == y - 1 || j == 0 || j == x - 1)
+                        {
+                            Console.Write("#");
+                        }
+                        else if (solars.checkSolars(j , i))
+                        {
+                            Console.Write("=");
+                        }
+                        else if (bird.y == y || bird.y == 0 || solars.checkSolars(bird.x , bird.y))
+                        {
+                            gameOver = true;
+                            break;
+                        }
+                        else if (bird.checkBird(j, i))
+                        {
+                            Console.Write(">");
+                        }
+                        else
+                        {
+                            Console.Write(" ");
+                        }
+                    }
+                    Console.WriteLine();
+                }
+                Console.WriteLine();
+
+            }
+
+            public void play()
+            {
+                Console.CursorVisible = false;
+                
+
+                while (!this.gameOver)
+                {
+                    Console.WriteLine("score : " + this.score.ToString());
+                    //Console.WriteLine("solar x : " + solar.x.ToString());
+
+
+
+                    this.playGround();
+
+                    score++;
+
+                    Thread.Sleep(gameSpeed);
+
+                    //if (this.key.currentKey == 1 || this.key.currentKey == -1)
+                    //{
+                    //    Thread.Sleep(gameSpeed);
+                    //}
+                    //else
+                    //{
+                    //    Thread.Sleep((int)(gameSpeed / 2));
+                    //}
+                }
+
+                Console.CursorVisible = true;
+                Console.WriteLine("score : " + this.score.ToString());
+                Console.WriteLine("game over!");
+                Console.ReadKey();
+            }
         }
 
         static void Main(string[] args)
         {
-
+            Console.SetWindowSize(150, 40);
 
 
             while (true)
@@ -285,6 +567,7 @@ namespace Application
                 Console.WriteLine("-----------welocme!-----------");
                 Console.WriteLine();
                 Console.WriteLine("snake game : 1");
+                Console.WriteLine("floppy bird : 2");
                 Console.WriteLine("exit : 0");
                 Console.WriteLine();
 
@@ -299,6 +582,27 @@ namespace Application
                             SnakeGame snakeGame = new SnakeGame();
 
                             snakeGame.play();
+
+                            break;
+                        }
+
+                    case "2":
+                        {
+                            floppyBirdGmae floppyBird = new floppyBirdGmae();
+
+                            floppyBird.play();
+
+                            break;
+                        }
+
+                     case "9":
+                        {
+                            ConsoleKeyInfo keyInfo = Console.ReadKey();
+
+
+                            Console.WriteLine(keyInfo.Key.ToString());
+
+                            Console.ReadKey();
 
                             break;
                         }
